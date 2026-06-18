@@ -1,0 +1,16 @@
+# Build outputs
+miniq.exe
+miniq
+
+# Local SQLite database files
+*.db
+*.db-shm
+*.db-wal
+
+# Go test/cache files
+*.test
+coverage.out
+
+# Editor/system files
+.vscode/
+.DS_Store
