@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"miniq/internal/db"
 	"os"
 	"strings"
 )
@@ -25,7 +26,9 @@ func main() {
 		fmt.Println("hello from miniq")
 	case "echo":
 		handleEcho(os.Args[2:])
-	default: 
+	case "init":
+		handleInit()
+	default:
 		fmt.Println("unknown command:", command)
 		printHelp()
 	}
@@ -51,4 +54,23 @@ func printHelp() {
 func handleEcho(args []string) {
 	message := strings.Join(args, " ")
 	fmt.Println(message)
+}
+
+// function to initialise thne sqlite database
+func handleInit() {
+	// open, or create, the sql database file for the jobs
+	database, err := db.Open("miniq.db")
+	if err != nil {
+		fmt.Println("failed to open database:", err)
+		return
+	}
+	defer database.Close() // schedule close database connection
+	// run migration to create actual jobs table
+	if err := db.Migrate(database); err != nil {
+		fmt.Println("failed to migrate database:", err)
+		return
+	}
+	// print success
+	fmt.Println("database initialised")
+
 }
