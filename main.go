@@ -25,6 +25,8 @@ func main() {
 		fmt.Println("miniq v0.1.0")
 	case "push":
 		handlePush(os.Args[2:]) // push job onto queue
+	case "list":
+		handleList() // display job list
 	case "hello":
 		fmt.Println("hello from miniq")
 	case "echo":
@@ -84,6 +86,10 @@ func handlePush(args []string) {
 		return
 	}
 	fmt.Println("job pushed")
+}
+
+func handleList() {
+
 }
 
 // handles the formatting of the echo command string
