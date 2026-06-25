@@ -1,27 +1,30 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"miniq/internal/db"
+	"miniq/internal/jobs"
 	"os"
 	"strings"
 )
 
 func main() {
-	// check if arg was provided
 	if len(os.Args) < 2 {
 		fmt.Println("No command provided")
 		printHelp()
 		return
 	}
+
 	command := os.Args[1]
 
 	switch command {
 	case "help":
 		printHelp()
 	case "version":
-		// do code
 		fmt.Println("miniq v0.1.0")
+	case "push":
+		handlePush(os.Args[2:]) // push job onto queue
 	case "hello":
 		fmt.Println("hello from miniq")
 	case "echo":
@@ -50,9 +53,49 @@ func printHelp() {
 
 }
 
+// handles adding a job to the queue
+func handlePush(args []string) {
+	// create new flag set for push
+	fs := flag.NewFlagSet("push", flag.ExitOnError)
+
+	jobType := fs.String("type", "", "job type")
+	payload := fs.String("payload", "", "job payload")
+
+	fs.Parse(args)
+
+	if *jobType == "" {
+		fmt.Println("missing required -type")
+		return
+	}
+	if *payload == "" {
+		fmt.Println("missing required -payload")
+		return
+	}
+
+	database, err := db.Open("miniq.db")
+	if err != nil {
+		fmt.Println("failed to open database:", err)
+		return
+	}
+	defer database.Close()
+
+	if err := jobs.Create(database, *jobType, *payload); err != nil {
+		fmt.Println("failed to push job:", err)
+		return
+	}
+	fmt.Println("job pushed")
+}
+
 // handles the formatting of the echo command string
 func handleEcho(args []string) {
-	message := strings.Join(args, " ")
+	fs := flag.NewFlagSet("echo", flag.ExitOnError)
+	upper := fs.Bool("upper", false, "print message in uppercase")
+
+	fs.Parse(args)
+	message := strings.Join(fs.Args(), " ")
+	if *upper {
+		message = strings.ToUpper(message)
+	}
 	fmt.Println(message)
 }
 
